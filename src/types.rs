@@ -5,7 +5,7 @@ pub struct U6 {
 
 impl U6 {
     pub fn from(val: u8) -> Self {
-        U6 { value: val & 0x3f }
+        U6 { value: val & 0x3F }
     }
 
     pub fn to_u8(&self) -> u8 {
@@ -20,7 +20,7 @@ pub struct U4 {
 
 impl U4 {
     pub fn from(val: u8) -> Self {
-        U4 { value: val & 0xf }
+        U4 { value: val & 0xF }
     }
 
     pub fn to_u8(&self) -> u8 {
