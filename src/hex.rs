@@ -1,9 +1,9 @@
 use crate::err::ConversionError;
 use crate::types::U4;
 
-const HEX_VALUES: [char; 16] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
+const HEX_VALUES: [u8; 16] = [b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'a', b'b', b'c', b'd', b'e', b'f'];
 
-fn in_hex(val: U4) -> char {
+fn in_hex(val: U4) -> u8 {
     HEX_VALUES[val.to_u8() as usize]
 }
 
@@ -27,11 +27,12 @@ pub fn from_hex(hex: &str) -> Result<Vec<u8>, ConversionError> {
 }
 
 pub fn to_hex(bytes: &[u8]) -> String {
-    bytes
-        .into_iter()
+    let encoded = bytes
+        .iter()
         .flat_map(|&val| [
                 in_hex(U4::from(val >> 4)),
                 in_hex(U4::from(val)),
         ])
-        .collect()
+        .collect();
+    String::from_utf8(encoded).expect("Conversion of any byte array to hex should be valid.")
 }
