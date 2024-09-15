@@ -1,3 +1,7 @@
+use std::vec;
+
+use crate::utils::hamming_distance;
+
 pub fn xor_single(input: &[u8], byte: u8) -> Vec<u8> {
     input.iter()
         .map(|&x| x^byte)
@@ -50,11 +54,41 @@ pub fn find_xor_single(input: &[u8]) -> u8 {
     result.1
 }
 
+pub fn find_xor_sequence(input: &[u8], range: (usize, usize)) -> Result<Vec<u8>, String> {
+    if input.len() < 2 * range.1 {
+        return Err(String::from("Input too short for given range."));
+    }
+
+    let mut key_size: (usize, f64) = (0, 8.5);
+    for l in range.0..=range.1 {
+        let range_groups = input.len() / l - 1;
+        let dist: u32 = (0..range_groups)
+            .map(|i| hamming_distance(&input[(i*l)..((i+1)*l)], &input[((i+1)*l)..((i+2)*l)]))
+            .sum();
+        let normalized_dist = dist as f64 / (range_groups * l) as f64;
+        println!("{}, {}", l, normalized_dist);
+        if normalized_dist < key_size.1 {
+            key_size = (l, normalized_dist);
+        }
+    }
+    let key_len = key_size.0;
+
+    let mut splitted_input: Vec<Vec<u8>> = vec![vec![]; key_len];
+    for (i, &b) in input.iter().enumerate() {
+        splitted_input[i % key_len].push(b);
+    }
+
+    let key: Vec<u8> = splitted_input.iter()
+        .map(|part| find_xor_single(part.as_ref()))
+        .collect();
+    Ok(key)
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs;
 
-    use crate::hex::{to_hex, from_hex};
+    use crate::{base64::from_base64, hex::{from_hex, to_hex}};
     use super::*;
 
     #[test]
@@ -107,5 +141,18 @@ mod tests {
         let hex_result = to_hex(result.as_ref());
 
         assert_eq!(expected, hex_result);
+    }
+
+    #[test]
+    fn crypto_problem_6() {
+        let input: String = fs::read_to_string("resources/6.txt").unwrap().replace("\n", "");
+        let bytes = from_base64(input.as_str()).unwrap();
+
+        let seq = find_xor_sequence(bytes.as_ref(), (2, 40)).unwrap();
+
+        let result = xor_sequence(bytes.as_ref(), seq.as_ref());
+        if let Some(text) = String::from_utf8(result).ok() {
+            println!("seq: {:?}, output: {:?}", seq, text);
+        }
     }
 }

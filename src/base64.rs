@@ -119,4 +119,15 @@ mod tests {
 
         assert_eq!(result, expected);
     }
+
+    #[test]
+    fn crypto_problem_6b() {
+        let input = "Jk8DCkkcC3hFMQIEC0EbAVIqCFZBO1IdBgZUVA4QTgUWSR4QJwwRTWM=";
+        let expected = "264f030a491c0b78453102040b411b01522a0856413b521d060654540e104e0516491e10270c114d6300";
+
+        let bytes = from_base64(input).unwrap();
+        let result = to_hex(bytes.as_ref());
+
+        assert_eq!(result, expected);
+    }
 }
